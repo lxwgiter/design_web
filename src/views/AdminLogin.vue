@@ -1,6 +1,13 @@
 <script setup>
 import { User, Lock } from '@element-plus/icons-vue'
 import { ref, reactive } from 'vue'
+import {adminRegisterService,adminLoginService} from '../services/adminService.js'
+import { ElMessage } from 'element-plus'
+import {useTokenStore} from '../store/token.js'
+
+//创建pinia实例
+const tokenStore = useTokenStore()
+
 const isRegister = ref(false)
 
 // 定义数据模型
@@ -42,6 +49,47 @@ const rules = {
   ]
 }
 
+// 表单引用
+const registerForm = ref(null)
+const loginForm = ref(null)
+// 提交注册
+const handleRegister = () => {
+  registerForm.value.validate((valid) => {
+    if (valid) {
+      adminRegisterService(LoginData) // 调用注册服务
+          .then(response => {
+            ElMessage.success("注册成功")
+            // 注册成功后的处理逻辑
+          })
+          .catch(error => {
+            ElMessage.error("注册失败", error)
+          })
+    } else {
+      ElMessage.error("请按要求输入")
+      return false // 返回 false，停止进一步的处理
+    }
+  })
+}
+
+const handleLogin = () => {
+  loginForm.value.validate((valid) => {
+    if (valid) {
+      adminLoginService(LoginData)
+          .then(response => {
+            tokenStore.setToken(response.data.token)
+            ElMessage.success("登陆成功")
+            console.log('登陆成功',response)
+          })
+          .catch(error => {
+            ElMessage.error("用户名或密码错误", error)
+          })
+    } else {
+      ElMessage.error("请按要求输入")
+      return false // 返回 false，停止进一步的处理
+    }
+  })
+}
+
 
 </script>
 
@@ -50,7 +98,7 @@ const rules = {
     <el-col :span="12" class="bg">麦麦管理员面板</el-col>
     <el-col :span="6" :offset="3" class="form">
       <!-- 注册表单 -->
-      <el-form ref="form" size="large" autocomplete="off" v-if="isRegister":model="LoginData" :rules="rules">
+      <el-form ref="registerForm" size="large" autocomplete="off" v-if="isRegister":model="LoginData" :rules="rules" >
         <el-form-item>
           <h1>注册</h1>
         </el-form-item>
@@ -65,7 +113,7 @@ const rules = {
         </el-form-item>
         <!-- 注册按钮 -->
         <el-form-item>
-          <el-button class="button" type="primary" auto-insert-space>
+          <el-button class="button" type="primary" auto-insert-space @click="handleRegister()">
             注册
           </el-button>
         </el-form-item>
@@ -76,7 +124,7 @@ const rules = {
         </el-form-item>
       </el-form>
       <!-- 登录表单 -->
-      <el-form ref="form" size="large" autocomplete="off" v-if="!isRegister" :model="LoginData" :rules="rules">
+      <el-form ref="loginForm" size="large" autocomplete="off" v-if="!isRegister" :model="LoginData" :rules="rules">
         <el-form-item>
           <h1>登录</h1>
         </el-form-item>
@@ -94,7 +142,7 @@ const rules = {
         </el-form-item>
         <!-- 登录按钮 -->
         <el-form-item>
-          <el-button class="button" type="primary" auto-insert-space>登录</el-button>
+          <el-button class="button" type="primary" auto-insert-space @click="handleLogin()">登录</el-button>
         </el-form-item>
         <el-form-item class="flex">
           <el-link type="info" :underline="false" @click="isRegister = !isRegister;clearLoginData()">
