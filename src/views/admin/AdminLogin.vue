@@ -1,9 +1,9 @@
 <script setup>
 import { User, Lock } from '@element-plus/icons-vue'
 import { ref, reactive } from 'vue'
-import {adminRegisterService,adminLoginService} from '../services/adminService.js'
+import {adminRegisterService,adminLoginService} from '../../services/adminService.js'
 import { ElMessage } from 'element-plus'
-import {useTokenStore} from '../store/token.js'
+import {useTokenStore} from '../../store/token.js'
 import { useRouter } from 'vue-router';
 
 const router = useRouter(); // 获取路由实例
@@ -82,7 +82,7 @@ const handleLogin = () => {
           .then(response => {
             tokenStore.setToken(response.data.token)
             ElMessage.success("登陆成功")
-            console.log('登陆成功',response)
+            router.push("/adminLayout")
           })
           .catch(error => {
             ElMessage.error("用户名或密码错误", error)
@@ -165,7 +165,7 @@ const handleLogin = () => {
   background-color: #fff;
 
   .bg {
-    background: url('../assets/background.jpg') no-repeat center / cover;
+    background: url('../../assets/background.jpg') no-repeat center / cover;
     border-radius: 0 20px 20px 0;
     display: flex; /* 使用 Flexbox 布局 */
     justify-content: center; /* 水平居中 */
