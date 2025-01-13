@@ -4,7 +4,9 @@ import { ref, reactive } from 'vue'
 import {adminRegisterService,adminLoginService} from '../services/adminService.js'
 import { ElMessage } from 'element-plus'
 import {useTokenStore} from '../store/token.js'
+import { useRouter } from 'vue-router';
 
+const router = useRouter(); // 获取路由实例
 //创建pinia实例
 const tokenStore = useTokenStore()
 
@@ -60,6 +62,8 @@ const handleRegister = () => {
           .then(response => {
             ElMessage.success("注册成功")
             // 注册成功后的处理逻辑
+            clearLoginData()
+            isRegister.value = false
           })
           .catch(error => {
             ElMessage.error("注册失败", error)
@@ -98,7 +102,7 @@ const handleLogin = () => {
     <el-col :span="12" class="bg">麦麦管理员面板</el-col>
     <el-col :span="6" :offset="3" class="form">
       <!-- 注册表单 -->
-      <el-form ref="registerForm" size="large" autocomplete="off" v-if="isRegister":model="LoginData" :rules="rules" >
+      <el-form ref="registerForm" size="large" autocomplete="off" v-if="isRegister" :model="LoginData" :rules="rules" >
         <el-form-item>
           <h1>注册</h1>
         </el-form-item>

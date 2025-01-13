@@ -3,7 +3,7 @@ import AdminLogin from './views/AdminLogin.vue'
 </script>
 
 <template>
-  <AdminLogin/>
+  <router-view></router-view> <!-- 渲染匹配的组件 -->
 </template>
 
 <style scoped>
