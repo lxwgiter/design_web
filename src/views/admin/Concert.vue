@@ -5,8 +5,7 @@ import {
 } from '@element-plus/icons-vue'
 
 import {onMounted, reactive, ref} from 'vue'
-import {getAllConcert} from "../../services/concert.js";
-import {getCategory, getCategoryPage} from "../../services/concertCategory.js";
+import {getAllConcert,getConcertPage,getTViewingInfo,getProjectDetails,getTicketInfo,updateDetails} from "../../services/concert.js";
 import {ElMessage} from "element-plus";
 
 
@@ -42,7 +41,7 @@ onMounted(() => {
 
 const handleSizeChange = (pageSize) => {
   //改变每页展示大小时，初始为第一页
-  getCategoryPage(1, pageSize).then(res => {
+  getConcertPage(1, pageSize).then(res => {
     concerts.list = res.data.list
     concerts.total = res.data.total
     concerts.pageNumber = res.data.pageNum
@@ -53,7 +52,7 @@ const handleSizeChange = (pageSize) => {
 }
 
 const handleCurrentChange = (pageNumber) => {
-  getCategoryPage(pageNumber, concerts.pageSize).then(res => {
+  getConcertPage(pageNumber, concerts.pageSize).then(res => {
     concerts.list = res.data.list
     concerts.total = res.data.total
     concerts.pageNumber = res.data.pageNum
@@ -61,6 +60,69 @@ const handleCurrentChange = (pageNumber) => {
   }).catch(err => {
     ElMessage.error("服务异常", error)
   })
+}
+
+const dialogFormVisible = ref(false)
+
+
+const formForDetails = reactive({
+  selectDetails: 'projectDetail',
+})
+//定义详细信息操作数据模型
+const details = ref('')
+
+const tempId = ref('')
+
+const handleDetail = (concertId) => {
+  if (concertId === undefined) {
+    concertId=tempId.value
+  }
+  tempId.value = concertId
+  dialogFormVisible.value = true
+  if(formForDetails.selectDetails === 'projectDetail'){
+    getProjectDetails(concertId).then(res => {
+      details.value = res.data
+    }).catch(err => {
+      ElMessage.error("服务异常", error)
+    })
+  }
+  if(formForDetails.selectDetails === 'ticketInfo'){
+    getTicketInfo(concertId).then(res => {
+      details.value = res.data
+    }).catch(err => {
+      ElMessage.error("服务异常", error)
+    })
+  }
+  if(formForDetails.selectDetails === 'viewingInfo'){
+    getTViewingInfo(concertId).then(res => {
+      details.value = res.data
+    }).catch(err => {
+      ElMessage.error("服务异常", error)
+    })
+  }
+}
+
+const handleSubmitDetails = () => {
+  let data = {}
+  if(formForDetails.selectDetails === 'projectDetail'){
+    data={concertId:tempId.value,projectDetails :details.value}
+  }
+  if(formForDetails.selectDetails === 'ticketInfo'){
+    data={concertId:tempId.value,ticketInfo :details.value}
+  }
+  if(formForDetails.selectDetails === 'viewingInfo'){
+    data={concertId:tempId.value,viewingInfo :details.value}
+  }
+  updateDetails(data).then(res => {
+    details.value = res.data
+  }).catch(err => {
+    ElMessage.error("服务异常", error)
+  })
+}
+//定义对话框关闭之前的回调
+const beforeClose = () => {
+  formForDetails.selectDetails='projectDetail';
+  dialogFormVisible.value=false
 }
 
 </script>
@@ -101,9 +163,9 @@ const handleCurrentChange = (pageNumber) => {
     <!-- 文章列表 -->
     <el-table :data="concerts.list" style="width: 100%">
       <template v-show = "false">
-        <el-table-column label="id"  prop="id" ></el-table-column>
+        <el-table-column label="id"  prop="concertId" ></el-table-column>
       </template>
-      <el-table-column label="封面" width="200" prop="coverImageUrl">
+      <el-table-column label="封面" width="150" prop="coverImageUrl">
         <template #default="{ row }">
           <!-- 在这里渲染图片 -->
           <img :src="row.coverImageUrl" alt="封面" style="width: 100%; height: auto;"/>
@@ -111,13 +173,18 @@ const handleCurrentChange = (pageNumber) => {
       </el-table-column>
       <el-table-column label="名称" width="200" prop="name"></el-table-column>
       <el-table-column label="出场人" prop="performers"></el-table-column>
-      <el-table-column label="类别" prop="categoryId"> </el-table-column>
-      <el-table-column label="地址" prop="addressId"></el-table-column>
+      <el-table-column label="类别" prop="category"> </el-table-column>
+      <el-table-column label="地址" prop="address"></el-table-column>
       <el-table-column label="详细地址" prop="detailedLocation"></el-table-column>
       <el-table-column label="时间" prop="startTime"></el-table-column>
       <el-table-column label="价格" prop="price"></el-table-column>
       <el-table-column label="库存" prop="stock"></el-table-column>
-      <el-table-column label="操作" width="100">
+      <el-table-column label="详情" width="100">
+        <template #default="{ row }">
+          <el-button round @click="handleDetail(row.concertId)">查看</el-button>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="150">
         <template #default="{ row }">
           <el-button :icon="Edit" circle plain type="primary"></el-button>
           <el-button :icon="Delete" circle plain type="danger"></el-button>
@@ -140,6 +207,36 @@ const handleCurrentChange = (pageNumber) => {
       />
     </div>
   </el-card>
+  <el-dialog v-model="dialogFormVisible" title="编辑详细信息" width="500" :before-close="beforeClose">
+    <el-form :model="formForDetails">
+
+      <el-form-item label="" label-width="50px">
+        <el-select v-model="formForDetails.selectDetails" placeholder="请选择"  @change="handleDetail()">
+          <el-option label="项目详情" value="projectDetail" />
+          <el-option label="购票须知" value="ticketInfo" />
+          <el-option label="观影须知" value="viewingInfo" />
+        </el-select>
+
+      </el-form-item>
+      <el-form-item label="" label-width="50px">
+        <el-input
+            v-model="details"
+            style="width: 450px"
+            :rows="10"
+            type="textarea"
+            placeholder="请输入...."
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="beforeClose()">Cancel</el-button>
+        <el-button type="primary" @click=" handleSubmitDetails();beforeClose()">
+          Confirm
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 <style lang="scss" scoped>
 .page-container {
