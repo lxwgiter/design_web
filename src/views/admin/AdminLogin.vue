@@ -80,7 +80,7 @@ const handleLogin = () => {
     if (valid) {
       adminLoginService(LoginData)
           .then(response => {
-            tokenStore.setToken(response.data.token)
+            tokenStore.setToken(response.data)
             ElMessage.success("登陆成功")
             router.push("/adminLayout")
           })

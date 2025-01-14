@@ -3,56 +3,105 @@ import {
   Edit,
   Delete
 } from '@element-plus/icons-vue'
-import { ref } from 'vue'
-const categorys = ref([
-  {
-    "id": 3,
-    "categoryName": "美食",
-    "categoryAlias": "my",
-    "createTime": "2023-09-02 12:06:59",
-    "updateTime": "2023-09-02 12:06:59"
-  },
-  {
-    "id": 4,
-    "categoryName": "娱乐",
-    "categoryAlias": "yl",
-    "createTime": "2023-09-02 12:08:16",
-    "updateTime": "2023-09-02 12:08:16"
-  },
-  {
-    "id": 5,
-    "categoryName": "军事",
-    "categoryAlias": "js",
-    "createTime": "2023-09-02 12:08:33",
-    "updateTime": "2023-09-02 12:08:33"
-  }
-])
+import { ref,reactive,onMounted } from 'vue'
+import {getAllAddresses,getAddresses} from "../../services/address.js";
+import { ElMessage } from 'element-plus'
+
+//控制对话框是否显示
+const centerDialogVisible = ref(false)
+const handleSizeChange = (pageSize) => {
+  //改变每页展示大小时，初始为第一页
+  getAddresses(1, pageSize).then(res => {
+    addresses.list = res.data.list
+    addresses.total = res.data.total
+    addresses.pageNumber = res.data.pageNum
+    addresses.pageSize = res.data.pageSize
+  }).catch(err => {
+    ElMessage.error("服务异常", error)
+  })
+}
+
+const handleCurrentChange = (pageNumber) => {
+  getAddresses(pageNumber, addresses.pageSize).then(res => {
+    addresses.list = res.data.list
+    addresses.total = res.data.total
+    addresses.pageNumber = res.data.pageNum
+    addresses.pageSize = res.data.pageSize
+  }).catch(err => {
+    ElMessage.error("服务异常", error)
+  })
+
+}
+
+const addresses =reactive({
+  list : [],
+  pageNumber: 1,
+  pageSize: 10,
+  total: 0,
+})
+onMounted(() => {
+  getAllAddresses().then(res => {
+    addresses.list = res.data.list
+    addresses.total = res.data.total
+    addresses.pageNumber = res.data.pageNumber
+    addresses.pageSize = res.data.pageSize
+  }).catch(err => {
+    ElMessage.error("服务异常", error)
+  })
+})
+
 </script>
 <template>
   <el-card class="page-container">
     <template #header>
       <div class="header">
-        <span>文章分类</span>
+        <span>地址列表</span>
         <div class="extra">
-          <el-button type="primary">添加分类</el-button>
+          <el-button type="primary" @click="centerDialogVisible = true">添加地址</el-button>
         </div>
       </div>
     </template>
-    <el-table :data="categorys" style="width: 100%">
-      <el-table-column label="序号" width="100" type="index"> </el-table-column>
-      <el-table-column label="分类名称" prop="categoryName"></el-table-column>
-      <el-table-column label="分类别名" prop="categoryAlias"></el-table-column>
-      <el-table-column label="操作" width="100">
+    <el-table :data="addresses.list" style="width: 100%">
+      <el-table-column label="序号" width="200"  prop="id"> </el-table-column>
+      <el-table-column label="地址" prop="location" ></el-table-column>
+      <el-table-column label="操作" width="200">
         <template #default="{ row }">
-          <el-button :icon="Edit" circle plain type="primary" ></el-button>
-          <el-button :icon="Delete" circle plain type="danger"></el-button>
+          <el-button :icon="Edit" circle plain type="primary" @click="centerDialogVisible = true"></el-button>
+          <el-button :icon="Delete" circle plain type="danger" @click="centerDialogVisible = true"></el-button>
         </template>
       </el-table-column>
       <template #empty>
         <el-empty description="没有数据" />
       </template>
     </el-table>
+    <div class="demo-pagination-block">
+      <el-pagination
+          v-model:current-page="addresses.pageNumber"
+          v-model:page-size="addresses.pageSize"
+          :page-sizes="[10, 15, 20, 25]"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="addresses.total"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+      />
+    </div>
   </el-card>
+    <!--对话框  -->
+  <el-dialog
+      v-model="centerDialogVisible"
+      title="警告"
+      width="500"
+      align-center
+  >
+    <span>禁止对地址增删改</span>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button type="primary" @click="centerDialogVisible = false">
+          Confirm
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <style lang="scss" scoped>
@@ -65,5 +114,9 @@ const categorys = ref([
     align-items: center;
     justify-content: space-between;
   }
+}
+.demo-pagination-block  {
+  margin-top: 15px;
+  float: right;
 }
 </style>
