@@ -7,6 +7,7 @@ import {
 import {onMounted, reactive, ref} from 'vue'
 import {getAllConcert,getConcertPage,getTViewingInfo,getProjectDetails,getTicketInfo,updateDetails} from "../../services/concert.js";
 import {ElMessage} from "element-plus";
+import MyDrawer from "../../components/MyDrawer.vue";
 
 
 
@@ -115,6 +116,7 @@ const handleSubmitDetails = () => {
   }
   updateDetails(data).then(res => {
     details.value = res.data
+    ElMessage.success("编辑成功")
   }).catch(err => {
     ElMessage.error("服务异常", error)
   })
@@ -124,6 +126,20 @@ const beforeClose = () => {
   formForDetails.selectDetails='projectDetail';
   dialogFormVisible.value=false
 }
+//抽屉子组件的引用
+const childRef = ref(null);
+//拿到子组件暴露的函数
+function callOpenDrawer() {
+  if (childRef.value) {
+    childRef.value.openDrawer();
+  }
+}
+//拿到子组件暴露的函数
+function chooseTitle(operate) {
+  if (childRef.value) {
+    childRef.value.chooseTitle(operate);
+  }
+}
 
 </script>
 <template>
@@ -132,7 +148,7 @@ const beforeClose = () => {
       <div class="header">
         <span>门票管理</span>
         <div class="extra">
-          <el-button type="primary">添加门票</el-button>
+          <el-button type="primary" @click="callOpenDrawer();chooseTitle('添加门票')">添加门票</el-button>
         </div>
       </div>
     </template>
@@ -186,7 +202,7 @@ const beforeClose = () => {
       </el-table-column>
       <el-table-column label="操作" width="150">
         <template #default="{ row }">
-          <el-button :icon="Edit" circle plain type="primary"></el-button>
+          <el-button :icon="Edit" circle plain type="primary" @click="callOpenDrawer();chooseTitle('编辑门票信息')"></el-button>
           <el-button :icon="Delete" circle plain type="danger"></el-button>
         </template>
       </el-table-column>
@@ -237,6 +253,7 @@ const beforeClose = () => {
       </div>
     </template>
   </el-dialog>
+  <MyDrawer ref="childRef"></MyDrawer>
 </template>
 <style lang="scss" scoped>
 .page-container {
