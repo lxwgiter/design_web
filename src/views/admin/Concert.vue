@@ -34,7 +34,6 @@ onMounted(() => {
     concerts.pageNumber = res.data.pageNum
     concerts.pageSize = res.data.pageSize
     concerts.total = res.data.total
-    console.log(res.data)
   }).catch(error => {
     ElMessage.error("服务异常", error)
   })

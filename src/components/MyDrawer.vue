@@ -7,21 +7,21 @@
       :before-close="handleClose"
       size="900"
   >
-    <el-form :inline="true" :model="concertForm" class="demo-form-inline">
+    <el-form :inline="true" :model="concertForm" class="demo-form-inline" :rules="rules" ref="formRef">
 
-      <el-form-item label="演唱会封面" label-width="100">
+      <el-form-item label="演唱会封面" label-width="100" prop="coverImageUrl">
         <el-input v-model="concertForm.coverImageUrl" placeholder="输入封面" clearable style="width: 500px;"/>
       </el-form-item><br>
 
-      <el-form-item label="演唱会名称" label-width="100">
+      <el-form-item label="演唱会名称" label-width="100" prop="name">
         <el-input v-model="concertForm.name" placeholder="输入演唱会名称" clearable style="width: 500px;"/>
       </el-form-item><br>
 
-      <el-form-item label="参演明星" label-width="100">
+      <el-form-item label="参演明星" label-width="100" prop="performers">
         <el-input v-model="concertForm.performers" placeholder="出入参演明星" clearable style="width: 500px;"/>
       </el-form-item>
 
-      <el-form-item label="地址" label-width="100">
+      <el-form-item label="地址" label-width="100" prop="addressId">
         <el-select
             v-model="concertForm.addressId"
             placeholder="请选择地址"
@@ -31,7 +31,7 @@
           <el-option :label="address.location" :value="address.id" v-for="address in addresses" :key="address.id"/>
         </el-select>
       </el-form-item>
-      <el-form-item label="类别" label-width="50">
+      <el-form-item label="类别" label-width="70" prop="categoryId">
         <el-select
             v-model="concertForm.categoryId"
             placeholder="请选择类别"
@@ -41,10 +41,10 @@
           <el-option :label="category.category" :value="category.id" v-for="category in concertCategory" :key="category.id"/>
         </el-select>
       </el-form-item>
-      <el-form-item label="详细地址" label-width="100">
+      <el-form-item label="详细地址" label-width="100" prop="detailedLocation">
         <el-input v-model="concertForm.detailedLocation" placeholder="请输入详细地址" clearable style="width: 500px;"/>
       </el-form-item>
-      <el-form-item label="举办时间" label-width="100">
+      <el-form-item label="举办时间" label-width="100" prop="startTime">
         <el-date-picker
             v-model="concertForm.startTime"
             type="datetime"
@@ -53,7 +53,7 @@
         />
       </el-form-item><br>
 
-      <el-form-item label="价格" label-width="100">
+      <el-form-item label="价格" label-width="100" prop="price">
         <el-input-number v-model="concertForm.price" :min="1"  size="large">
           <template #suffix>
             <span>RMB</span>
@@ -61,7 +61,7 @@
         </el-input-number>
       </el-form-item><br>
 
-      <el-form-item label="库存" label-width="100">
+      <el-form-item label="库存" label-width="100" prop="stock">
         <el-input-number v-model="concertForm.stock" :min="0"  size="large">
         </el-input-number>
       </el-form-item><br>
@@ -133,8 +133,19 @@ const chooseTitle = (operate) =>{
     myTitle.value = operate
 }
 
+const formRef = ref(null); // 表单引用
 const onSubmit = () => {
-  console.log(concertForm)
+  // 调用表单的验证方法
+  formRef.value.validate((valid) => {
+    if (valid) {
+      // 校验成功，执行提交逻辑
+      console.log('验证通过，可以提交表单:', concertForm);
+      // 这里可以调用 API 进行提交
+    } else {
+      ElMessage.error("请按照要求填写")
+      return false;
+    }
+  });
 }
 
 //定义数据模型
@@ -153,6 +164,31 @@ const concertForm = reactive({
   ticketInfo : '',
   viewingInfo : ''
 })
+
+//校验库存的函数
+const checkStock = (rule, value, callback) => {
+  if (!Number.isInteger(value)) {
+    callback(new Error('库存只能是整数'))
+  } else {
+    callback()
+  }
+}
+const commonRule =[{ required: true, message: '必填项', trigger: 'blur' }]
+const rules = {
+  name: commonRule,
+  addressId: commonRule,
+  detailedLocation: commonRule,
+  startTime: commonRule,
+  categoryId: commonRule,
+  performers: commonRule,
+  price: commonRule,
+  coverImageUrl: commonRule,
+  stock: [
+    { validator: checkStock, trigger: 'blur' ,required: true}
+  ]
+}
+
+
 
 //定义地址数据模型
 const addresses = ref([])
