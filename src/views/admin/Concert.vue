@@ -35,7 +35,7 @@ onMounted(() => {
     concerts.pageSize = res.data.pageSize
     concerts.total = res.data.total
     console.log(res.data)
-  }).catch(err => {
+  }).catch(error => {
     ElMessage.error("服务异常", error)
   })
 })
@@ -47,7 +47,7 @@ const handleSizeChange = (pageSize) => {
     concerts.total = res.data.total
     concerts.pageNumber = res.data.pageNum
     concerts.pageSize = res.data.pageSize
-  }).catch(err => {
+  }).catch(error => {
     ElMessage.error("服务异常", error)
   })
 }
@@ -58,7 +58,7 @@ const handleCurrentChange = (pageNumber) => {
     concerts.total = res.data.total
     concerts.pageNumber = res.data.pageNum
     concerts.pageSize = res.data.pageSize
-  }).catch(err => {
+  }).catch(error => {
     ElMessage.error("服务异常", error)
   })
 }
@@ -83,21 +83,21 @@ const handleDetail = (concertId) => {
   if(formForDetails.selectDetails === 'projectDetail'){
     getProjectDetails(concertId).then(res => {
       details.value = res.data
-    }).catch(err => {
+    }).catch(error => {
       ElMessage.error("服务异常", error)
     })
   }
   if(formForDetails.selectDetails === 'ticketInfo'){
     getTicketInfo(concertId).then(res => {
       details.value = res.data
-    }).catch(err => {
+    }).catch(error => {
       ElMessage.error("服务异常", error)
     })
   }
   if(formForDetails.selectDetails === 'viewingInfo'){
     getTViewingInfo(concertId).then(res => {
       details.value = res.data
-    }).catch(err => {
+    }).catch(error => {
       ElMessage.error("服务异常", error)
     })
   }
@@ -117,7 +117,7 @@ const handleSubmitDetails = () => {
   updateDetails(data).then(res => {
     details.value = res.data
     ElMessage.success("编辑成功")
-  }).catch(err => {
+  }).catch(error => {
     ElMessage.error("服务异常", error)
   })
 }

@@ -16,7 +16,7 @@ const handleSizeChange = (pageSize) => {
     categories.total = res.data.total
     categories.pageNumber = res.data.pageNum
     categories.pageSize = res.data.pageSize
-  }).catch(err => {
+  }).catch(error => {
     ElMessage.error("服务异常", error)
   })
 }
@@ -27,7 +27,7 @@ const handleCurrentChange = (pageNumber) => {
     categories.total = res.data.total
     categories.pageNumber = res.data.pageNum
     categories.pageSize = res.data.pageSize
-  }).catch(err => {
+  }).catch(error => {
     ElMessage.error("服务异常", error)
   })
 
@@ -45,7 +45,7 @@ onMounted(() => {
     categories.total = res.data.total
     categories.pageNumber = res.data.pageNumber
     categories.pageSize = res.data.pageSize
-  }).catch(err => {
+  }).catch(error => {
     ElMessage.error("服务异常", error)
   })
 })

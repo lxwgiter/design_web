@@ -5,7 +5,7 @@
       :title="myTitle"
       :direction="direction"
       :before-close="handleClose"
-      size="1000"
+      size="900"
   >
     <el-form :inline="true" :model="concertForm" class="demo-form-inline">
 
@@ -26,9 +26,9 @@
             v-model="concertForm.addressId"
             placeholder="请选择地址"
             clearable
+            @click="getAddresses()"
         >
-          <el-option label="Zone one" value="shanghai" />
-          <el-option label="Zone two" value="beijing" />
+          <el-option :label="address.location" :value="address.id" v-for="address in addresses" :key="address.id"/>
         </el-select>
       </el-form-item>
       <el-form-item label="类别" label-width="50">
@@ -36,9 +36,9 @@
             v-model="concertForm.categoryId"
             placeholder="请选择类别"
             clearable
+            @click="getConcertCategory()"
         >
-          <el-option label="Zone one" value="shanghai" />
-          <el-option label="Zone two" value="beijing" />
+          <el-option :label="category.category" :value="category.id" v-for="category in concertCategory" :key="category.id"/>
         </el-select>
       </el-form-item>
       <el-form-item label="详细地址" label-width="100">
@@ -94,11 +94,11 @@
             type="textarea"
             placeholder="请输入...."
         />
-      </el-form-item>
+      </el-form-item><br>
 
 
-      <el-form-item>
-        <el-button type="primary" @click="onSubmit">Query</el-button>
+      <el-form-item style="margin-left: 300px">
+        <el-button type="primary" @click="onSubmit">确认添加</el-button>
       </el-form-item>
     </el-form>
   </el-drawer>
@@ -108,10 +108,12 @@
 
 <script lang="ts" setup>
 import {ref, defineExpose, reactive} from 'vue'
-import { ElMessageBox } from 'element-plus'
+import {ElMessage, ElMessageBox} from 'element-plus'
 import type { DrawerProps } from 'element-plus'
+import { getAddressesList } from '../services/address';
 const drawer = ref(false)
 const direction = ref<DrawerProps['direction']>('rtl') // 设置默认为右到左
+import {getCategory} from '../services/concertCategory'
 
 
 const handleClose = (done: () => void) => {
@@ -132,7 +134,7 @@ const chooseTitle = (operate) =>{
 }
 
 const onSubmit = () => {
-  console.log('submit!')
+  console.log(concertForm)
 }
 
 //定义数据模型
@@ -151,6 +153,29 @@ const concertForm = reactive({
   ticketInfo : '',
   viewingInfo : ''
 })
+
+//定义地址数据模型
+const addresses = ref([])
+
+//得到地址列表
+const getAddresses = () =>{
+  getAddressesList().then(res => {
+    addresses.value = res.data
+  }).catch(error => {
+    ElMessage.error("服务异常", error)
+  })
+}
+
+//定义分类数据模型
+const concertCategory =ref([])
+//得到分类列表
+const getConcertCategory = () => {
+  getCategory().then(res => {
+    concertCategory.value = res.data.list
+  }).catch(error => {
+    ElMessage.error("服务异常", error)
+  })
+}
 
 // 暴露 openDrawer 方法给父组件
 defineExpose({ openDrawer,chooseTitle });
