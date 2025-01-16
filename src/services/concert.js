@@ -30,3 +30,18 @@ export const updateDetails = (data)=>{
     return http.patch('/concert/updateDetails',data);
 }
 
+//提供添加门票详情的接口
+export const addConcert = (data)=>{
+    return http.post('/concert/add',data);
+}
+
+//修改门票时数据回显
+export const getDetails = (concertId)=>{
+    return http.get(`/concert/getConcertById?concertId=${concertId}`);
+}
+
+//修改门票
+export const updateConcert = (data)=>{
+    return http.put('/concert/updateConcert',data);
+}
+

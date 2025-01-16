@@ -27,8 +27,8 @@ const concerts =reactive({
   total: 0,
 })
 
-
-onMounted(() => {
+//组件挂载时调用，还要传给抽屉子组件，让子组件调用实现页面刷新
+const firstGet = () => {
   getAllConcert().then((res) => {
     concerts.list = res.data.list
     concerts.pageNumber = res.data.pageNum
@@ -37,6 +37,10 @@ onMounted(() => {
   }).catch(error => {
     ElMessage.error("服务异常", error)
   })
+}
+
+onMounted(() => {
+    firstGet()
 })
 
 const handleSizeChange = (pageSize) => {
@@ -134,10 +138,13 @@ function callOpenDrawer() {
   }
 }
 //拿到子组件暴露的函数
-function chooseTitle(operate) {
+function chooseTitle(operate,id) {
   if (childRef.value) {
-    childRef.value.chooseTitle(operate);
+    childRef.value.chooseTitle(operate,id);
   }
+}
+function formatDate(timeString) {
+  return timeString.split(':').slice(0, 2).join(':').replace('T', ' ');
 }
 
 </script>
@@ -147,7 +154,7 @@ function chooseTitle(operate) {
       <div class="header">
         <span>门票管理</span>
         <div class="extra">
-          <el-button type="primary" @click="callOpenDrawer();chooseTitle('添加门票')">添加门票</el-button>
+          <el-button type="primary" @click="callOpenDrawer();chooseTitle('添加门票',-1)">添加门票</el-button>
         </div>
       </div>
     </template>
@@ -191,7 +198,11 @@ function chooseTitle(operate) {
       <el-table-column label="类别" prop="category"> </el-table-column>
       <el-table-column label="地址" prop="address"></el-table-column>
       <el-table-column label="详细地址" prop="detailedLocation"></el-table-column>
-      <el-table-column label="时间" prop="startTime"></el-table-column>
+      <el-table-column label="时间" >
+        <template v-slot="scope">
+          {{ formatDate(scope.row.startTime) }}
+        </template>
+      </el-table-column>
       <el-table-column label="价格" prop="price"></el-table-column>
       <el-table-column label="库存" prop="stock"></el-table-column>
       <el-table-column label="详情" width="100">
@@ -201,7 +212,7 @@ function chooseTitle(operate) {
       </el-table-column>
       <el-table-column label="操作" width="150">
         <template #default="{ row }">
-          <el-button :icon="Edit" circle plain type="primary" @click="callOpenDrawer();chooseTitle('编辑门票信息')"></el-button>
+          <el-button :icon="Edit" circle plain type="primary" @click="callOpenDrawer();chooseTitle('编辑门票信息',row.concertId)"></el-button>
           <el-button :icon="Delete" circle plain type="danger"></el-button>
         </template>
       </el-table-column>
@@ -252,7 +263,7 @@ function chooseTitle(operate) {
       </div>
     </template>
   </el-dialog>
-  <MyDrawer ref="childRef"></MyDrawer>
+  <MyDrawer ref="childRef" :flush="firstGet"></MyDrawer>
 </template>
 <style lang="scss" scoped>
 .page-container {

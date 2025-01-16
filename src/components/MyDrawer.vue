@@ -18,7 +18,7 @@
       </el-form-item><br>
 
       <el-form-item label="参演明星" label-width="100" prop="performers">
-        <el-input v-model="concertForm.performers" placeholder="出入参演明星" clearable style="width: 500px;"/>
+        <el-input v-model="concertForm.performers" placeholder="输入参演明星" clearable style="width: 500px;"/>
       </el-form-item>
 
       <el-form-item label="地址" label-width="100" prop="addressId">
@@ -28,6 +28,7 @@
             clearable
             @click="getAddresses()"
         >
+          <el-option v-if="myTitle==='编辑门票信息'" :label="otherDetailsOnUpdate.address+'(当前地址)'" :value="otherDetailsOnUpdate.addressId"  :key="0" disabled/>
           <el-option :label="address.location" :value="address.id" v-for="address in addresses" :key="address.id"/>
         </el-select>
       </el-form-item>
@@ -38,6 +39,8 @@
             clearable
             @click="getConcertCategory()"
         >
+          <el-option v-if="myTitle==='编辑门票信息'" :label="otherDetailsOnUpdate.category+'(当前分类)'" :value="otherDetailsOnUpdate.categoryId"  :key="0" disabled/>
+
           <el-option :label="category.category" :value="category.id" v-for="category in concertCategory" :key="category.id"/>
         </el-select>
       </el-form-item>
@@ -98,7 +101,8 @@
 
 
       <el-form-item style="margin-left: 300px">
-        <el-button type="primary" @click="onSubmit">确认添加</el-button>
+        <el-button v-if="myTitle==='编辑门票信息'" type="primary" @click="onUpdate">确认修改</el-button>
+        <el-button  v-if="myTitle !== '编辑门票信息'"  type="primary" @click="onSubmit">确认添加</el-button>
       </el-form-item>
     </el-form>
   </el-drawer>
@@ -114,11 +118,22 @@ import { getAddressesList } from '../services/address';
 const drawer = ref(false)
 const direction = ref<DrawerProps['direction']>('rtl') // 设置默认为右到左
 import {getCategory} from '../services/concertCategory'
+import {addConcert,getDetails,updateConcert} from '../services/concert'
+
+//接受父组件的信息
+const props = defineProps({
+  flush: {
+    type: Function,
+    required: true, // 确保这个 prop 被传递
+  },
+});
 
 
 const handleClose = (done: () => void) => {
   ElMessageBox.confirm('此时关闭会导致未保存的数据丢失，您确定关闭吗？')
       .then(() => {
+        //关闭窗口就清空数据
+        clearData()
         done()
       })
 }
@@ -127,10 +142,44 @@ function openDrawer() {
   direction.value = 'rtl'; // 设置方向为右到左
   drawer.value = true; // 打开抽屉
 }
+const otherDetailsOnUpdate = reactive({
+  address :'',
+  addressId:'',
+  category :'',
+  categoryId:''
+})
 
+const displayUpdate = (id) => {
+  getDetails(id).then(response => {
+    concertForm.addressId=response.data.addressId
+    concertForm.categoryId=response.data.categoryId
+    concertForm.concertId=response.data.concertId
+    concertForm.coverImageUrl=response.data.coverImageUrl
+    concertForm.detailedLocation=response.data.detailedLocation
+    concertForm.name=response.data.name
+    concertForm.performers=response.data.performers
+    concertForm.price=response.data.price
+    concertForm.projectDetails=response.data.projectDetails
+    concertForm.startTime=new Date(response.data.startTime).toISOString()
+    concertForm.stock=response.data.stock
+    concertForm.ticketInfo=response.data.ticketInfo
+    concertForm.viewingInfo=response.data.viewingInfo
+    otherDetailsOnUpdate.address=response.data.address
+    otherDetailsOnUpdate.addressId=response.data.addressId
+    otherDetailsOnUpdate.category=response.data.category
+    otherDetailsOnUpdate.categoryId=response.data.categoryId
+  }).catch(err => {
+    ElMessage.error("服务异常",err)
+  })
+}
+
+//定义当前状态是新增还是删除
 const myTitle = ref('')
-const chooseTitle = (operate) =>{
-    myTitle.value = operate
+const chooseTitle = (operate,concertId) =>{
+  myTitle.value = operate
+  if(operate == '编辑门票信息'){
+    displayUpdate(concertId)
+  }
 }
 
 const formRef = ref(null); // 表单引用
@@ -139,7 +188,42 @@ const onSubmit = () => {
   formRef.value.validate((valid) => {
     if (valid) {
       // 校验成功，执行提交逻辑
-      console.log('验证通过，可以提交表单:', concertForm);
+      executeAdd(concertForm)
+      //隐藏抽屉
+      drawer.value = false;
+      //刷新页面
+      setTimeout(()=>{
+        props.flush()
+      },1000)
+      // 这里可以调用 API 进行提交
+    } else {
+      ElMessage.error("请按照要求填写")
+      return false;
+    }
+  });
+}
+
+const executeUpdate = (concertForm) => {
+  console.log(concertForm)
+  updateConcert(concertForm).then(res => {
+    ElMessage.success("修改成功")
+  }).catch(error => {
+    ElMessage.error("服务异常", error)
+  })
+}
+
+const onUpdate = () => {
+  // 调用表单的验证方法
+  formRef.value.validate((valid) => {
+    if (valid) {
+      // 校验成功，执行提交逻辑
+      executeUpdate(concertForm)
+      //隐藏抽屉
+      drawer.value = false;
+      //刷新页面
+      setTimeout(() => {
+        props.flush();
+      }, 1000);
       // 这里可以调用 API 进行提交
     } else {
       ElMessage.error("请按照要求填写")
@@ -164,6 +248,23 @@ const concertForm = reactive({
   ticketInfo : '',
   viewingInfo : ''
 })
+
+//定义清空数据模型函数
+const clearData = () => {
+  concertForm.concertId = '',
+  concertForm.name = '',
+  concertForm.addressId = '',
+  concertForm.detailedLocation = '',
+  concertForm.startTime = '',
+  concertForm.categoryId = '',
+  concertForm.performers = '',
+  concertForm.price = 1,
+  concertForm.stock = 0,
+  concertForm.coverImageUrl = '',
+  concertForm.projectDetails = '',
+  concertForm.ticketInfo = '',
+  concertForm.viewingInfo = ''
+}
 
 //校验库存的函数
 const checkStock = (rule, value, callback) => {
@@ -212,6 +313,16 @@ const getConcertCategory = () => {
     ElMessage.error("服务异常", error)
   })
 }
+
+const executeAdd = (data) => {
+  addConcert(data).then(res => {
+    ElMessage.success("添加成功")
+  }).catch(error => {
+    ElMessage.error("服务异常", error)
+  })
+}
+
+
 
 // 暴露 openDrawer 方法给父组件
 defineExpose({ openDrawer,chooseTitle });
