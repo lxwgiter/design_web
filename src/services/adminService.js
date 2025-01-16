@@ -8,3 +8,13 @@ export const adminRegisterService = (registerData)=>{
 export const adminLoginService = (LoginData)=>{
     return http.post('/admin/login',LoginData);
 }
+
+//得到管理员本身的信息
+export const getMe = ()=>{
+    return http.get('/admin/me');
+}
+
+//修改昵称和邮箱
+export const updateNicknameAndEmail = (nickname,email)=>{
+    return http.patch(`/admin/updateNicknameAndEmail?nickname=${nickname}&email=${email}`);
+}

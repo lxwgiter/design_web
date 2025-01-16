@@ -1,24 +1,50 @@
 <script setup>
-import { ref } from 'vue'
-const userInfo = ref({
-  id: 0,
-  username: 'zhangsan',
-  nickname: 'zs',
-  email: 'zs@163.com',
+import {onMounted, reactive, ref} from 'vue'
+import {getMe,updateNicknameAndEmail} from '../../services/adminService.js'
+import {ElMessage} from "element-plus";
+const userInfo = reactive({
+  account: '',
+  nickName: '',
+  email: '',
+  createdTime:''
 })
 const rules = {
-  nickname: [
+  nickName: [
     { required: true, message: '请输入用户昵称', trigger: 'blur' },
-    {
-      pattern: /^\S{2,10}$/,
-      message: '昵称必须是2-10位的非空字符串',
-      trigger: 'blur'
-    }
+    {min: 2, max: 50, message: '长度为2~50位非空字符', trigger: 'blur'}
   ],
   email: [
     { required: true, message: '请输入用户邮箱', trigger: 'blur' },
     { type: 'email', message: '邮箱格式不正确', trigger: 'blur' }
   ]
+}
+
+const executeGet=()=>{
+  getMe().then(res => {
+    userInfo.account = res.data.account
+    userInfo.nickName = res.data.nickName
+    userInfo.email = res.data.email
+    userInfo.createdTime = res.data.createdTime
+  }).catch(err => ElMessage.error("服务异常",err))
+}
+
+onMounted(()=>{
+  executeGet()
+    }
+)
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}时${date.getMinutes()}分${date.getSeconds()}秒`;
+};
+
+const handleSubmit= ()=>{
+  updateNicknameAndEmail(userInfo.nickName,userInfo.email).then(res=>{
+    ElMessage.success("修改成功")
+    setTimeout(executeGet,1000)
+  }).catch(err=>{
+    ElMessage.error("服务异常",err)
+  })
 }
 </script>
 <template>
@@ -32,16 +58,19 @@ const rules = {
       <el-col :span="12">
         <el-form :model="userInfo" :rules="rules" label-width="100px" size="large">
           <el-form-item label="登录名称">
-            <el-input v-model="userInfo.username" disabled></el-input>
+            <el-input v-model="userInfo.account" disabled></el-input>
           </el-form-item>
-          <el-form-item label="用户昵称" prop="nickname">
-            <el-input v-model="userInfo.nickname"></el-input>
+          <el-form-item label="注册时间">
+            <el-input :value="formatDate(userInfo.createdTime)" disabled></el-input>
+          </el-form-item>
+          <el-form-item label="用户昵称" prop="nickName">
+            <el-input v-model="userInfo.nickName"></el-input>
           </el-form-item>
           <el-form-item label="用户邮箱" prop="email">
             <el-input v-model="userInfo.email"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary">提交修改</el-button>
+            <el-button type="primary" @click="handleSubmit()">提交修改</el-button>
           </el-form-item>
         </el-form>
       </el-col>
