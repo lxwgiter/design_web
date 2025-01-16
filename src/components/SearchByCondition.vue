@@ -12,7 +12,7 @@
     <el-form-item label="类别" label-width="50px">
       <el-select
           v-model="formSearch.categoryId"
-          placeholder=""
+          placeholder="请选择"
           clearable
           style="width: 80px"
           @click="getConcertCategory()"
@@ -24,7 +24,7 @@
     <el-form-item label="地址" label-width="50px">
       <el-select
           v-model="formSearch.addressId"
-          placeholder=""
+          placeholder="请选择"
           clearable
           style="width: 80px"
           @click="getAddresses()"
@@ -36,13 +36,13 @@
     <el-form-item>
       <div class="block">
         <el-date-picker
-            v-model="value1"
+            v-model="time"
             type="monthrange"
             range-separator="To"
-            start-placeholder="Start month"
-            end-placeholder="End month"
+            start-placeholder="起始月"
+            end-placeholder="结束月"
             size="small"
-            style="width: 100px"
+            style="width: 200px"
         />
       </div>
     </el-form-item>
@@ -60,21 +60,33 @@ import { getAddressesList } from '../services/address';
 import {getCategory} from '../services/concertCategory'
 import {ElMessage} from "element-plus";
 
-const value1 = ref('')
+const time = ref([])
 
 const reset = () => {
-  console.log(value1.value)
   formSearch.name = '';
   formSearch.performers = '';
   formSearch.categoryId = '';
   formSearch.addressId = '';
+  time.value = [];
 }
 
 // 定义自定义事件
 const emit = defineEmits(['get:data']);
 
 const sendData = () => {
-  emit('get:data', formSearch); // 触发事件并传递数据
+
+  if(time.value.length > 0){
+    emit('get:data', {
+      ...formSearch,
+      startTime: new Date(time.value[0]).toISOString(),
+      endTime: new Date(time.value[1]).toISOString()
+    }); // 触发事件并传递数据
+  }else {
+    emit('get:data', {
+      ...formSearch
+    }); // 触发事件并传递数据
+  }
+
 }
 
 //定义数据模型
