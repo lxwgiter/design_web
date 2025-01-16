@@ -1,5 +1,5 @@
 <script setup>
-import { User, Lock } from '@element-plus/icons-vue'
+import { User, Lock,Stamp} from '@element-plus/icons-vue'
 import { ref, reactive } from 'vue'
 import {adminRegisterService,adminLoginService} from '../../services/adminService.js'
 import { ElMessage } from 'element-plus'
@@ -16,7 +16,8 @@ const isRegister = ref(false)
 const LoginData = reactive({
   account: '',
   password: '',
-  rePassword: ''
+  rePassword: '',
+  email: ''
 })
 //定义函数,清空数据模型的数据
 const clearLoginData = ()=>{
@@ -36,8 +37,35 @@ const checkRePassword = (rule, value, callback) => {
     callback()
   }
 }
+//校验邮箱的函数
+const validateEmail = (rule, value, callback) => {
+  if (value === '') {
+    return callback(new Error('请再次邮箱'))
+  }
+  const emailPattern = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/;
+  if (!emailPattern.test(value)) {
+    return callback(new Error('邮箱格式不正确'));
+  }
+  callback(); // 验证通过
+}
+
+
+
+
 // 定义表单校验规则
-const rules = {
+const rulesForLogin = {
+  account: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 5, max: 16, message: '长度为5~16位非空字符', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 5, max: 16, message: '长度为5~16位非空字符', trigger: 'blur' }
+  ]
+}
+
+// 定义表单校验规则
+const rulesForRegister = {
   account: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
     { min: 5, max: 16, message: '长度为5~16位非空字符', trigger: 'blur' }
@@ -47,7 +75,10 @@ const rules = {
     { min: 5, max: 16, message: '长度为5~16位非空字符', trigger: 'blur' }
   ],
   rePassword: [
-    { validator: checkRePassword, trigger: 'blur' }
+    { required: true,validator: checkRePassword, trigger: 'blur' }
+  ],
+  email: [
+    {required: true,validator: validateEmail, trigger: 'blur'}
   ]
 }
 
@@ -82,7 +113,7 @@ const handleLogin = () => {
           .then(response => {
             tokenStore.setToken(response.data)
             ElMessage.success("登陆成功")
-            router.push("/adminLayout")
+            router.push("/adminLayout/address")
           })
           .catch(error => {
             ElMessage.error("用户名或密码错误", error)
@@ -102,12 +133,15 @@ const handleLogin = () => {
     <el-col :span="12" class="bg">麦麦管理员面板</el-col>
     <el-col :span="6" :offset="3" class="form">
       <!-- 注册表单 -->
-      <el-form ref="registerForm" size="large" autocomplete="off" v-if="isRegister" :model="LoginData" :rules="rules" >
+      <el-form ref="registerForm" size="large" autocomplete="off" v-if="isRegister" :model="LoginData" :rules="rulesForRegister" >
         <el-form-item>
           <h1>注册</h1>
         </el-form-item>
         <el-form-item prop="account">
           <el-input :prefix-icon="User" placeholder="请输入用户名" v-model="LoginData.account"></el-input>
+        </el-form-item>
+        <el-form-item prop="email">
+          <el-input :prefix-icon="Stamp"  placeholder="请输入邮箱" v-model="LoginData.email"></el-input>
         </el-form-item>
         <el-form-item prop="password">
           <el-input :prefix-icon="Lock" type="password" placeholder="请输入密码" v-model="LoginData.password"></el-input>
@@ -128,7 +162,7 @@ const handleLogin = () => {
         </el-form-item>
       </el-form>
       <!-- 登录表单 -->
-      <el-form ref="loginForm" size="large" autocomplete="off" v-if="!isRegister" :model="LoginData" :rules="rules">
+      <el-form ref="loginForm" size="large" autocomplete="off" v-if="!isRegister" :model="LoginData" :rules="rulesForLogin">
         <el-form-item>
           <h1>登录</h1>
         </el-form-item>
