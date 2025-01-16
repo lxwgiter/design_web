@@ -50,3 +50,10 @@ export const deleteConcert = (concertId)=>{
     return http.delete(`/concert/deleteConcert?concertId=${concertId}`);
 }
 
+//根据条件分页筛选
+export const searchConcertByConditions = (data)=>{
+    return http.post('/concert/searchConcertByConditions',data);
+}
+
+
+

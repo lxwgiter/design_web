@@ -12,20 +12,12 @@ import {
   getProjectDetails,
   getTicketInfo,
   updateDetails,
-  deleteConcert
+  deleteConcert,
+  searchConcertByConditions
 } from "../../services/concert.js";
 import {ElMessage, ElMessageBox} from "element-plus";
 import MyDrawer from "../../components/MyDrawer.vue";
-
-
-
-//用户搜索时选中的分类id
-const categoryId=ref('')
-
-//用户搜索时选中的发布状态
-const state=ref('')
-
-
+import SearchByCondition from "../../components/SearchByCondition.vue";
 
 //定义数据模型
 const concerts =reactive({
@@ -182,6 +174,16 @@ const handleDelete = (id) => {
     })
   })
 }
+const handleData = (data) => {
+  searchConcertByConditions({...data,pageNumber:concerts.pageNumber,pageSize:concerts.pageSize}).then(res => {
+    concerts.list = res.data.list
+    concerts.total = res.data.total
+    concerts.pageNumber = res.data.pageNum
+    concerts.pageSize = res.data.pageSize
+  }).catch(error => {
+    ElMessage.error("服务异常", error)
+  })
+};
 
 </script>
 <template>
@@ -189,35 +191,12 @@ const handleDelete = (id) => {
     <template #header>
       <div class="header">
         <span>门票管理</span>
+        <SearchByCondition @get:data="handleData"></SearchByCondition>
         <div class="extra">
           <el-button type="primary" @click="callOpenDrawer();chooseTitle('添加门票',-1)">添加门票</el-button>
         </div>
       </div>
     </template>
-    <!-- 搜索表单 -->
-<!--    <el-form inline>-->
-<!--      <el-form-item label="文章分类：">-->
-<!--        <el-select placeholder="请选择" v-model="categoryId">-->
-<!--          <el-option-->
-<!--              v-for="c in categorys"-->
-<!--              :key="c.id"-->
-<!--              :label="c.categoryName"-->
-<!--              :value="c.id">-->
-<!--          </el-option>-->
-<!--        </el-select>-->
-<!--      </el-form-item>-->
-
-<!--      <el-form-item label="发布状态：">-->
-<!--        <el-select placeholder="请选择" v-model="state">-->
-<!--          <el-option label="已发布" value="已发布"></el-option>-->
-<!--          <el-option label="草稿" value="草稿"></el-option>-->
-<!--        </el-select>-->
-<!--      </el-form-item>-->
-<!--      <el-form-item>-->
-<!--        <el-button type="primary">搜索</el-button>-->
-<!--        <el-button>重置</el-button>-->
-<!--      </el-form-item>-->
-<!--    </el-form>-->
     <!-- 文章列表 -->
     <el-table :data="concerts.list" style="width: 100%">
       <template v-show = "false">
