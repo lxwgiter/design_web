@@ -97,7 +97,7 @@ onMounted(() => {
     <template #footer>
       <div class="dialog-footer">
         <el-button type="primary" @click="centerDialogVisible = false">
-          Confirm
+          确认
         </el-button>
       </div>
     </template>

@@ -45,3 +45,8 @@ export const updateConcert = (data)=>{
     return http.put('/concert/updateConcert',data);
 }
 
+//根据concertId删除门票
+export const deleteConcert = (concertId)=>{
+    return http.delete(`/concert/deleteConcert?concertId=${concertId}`);
+}
+

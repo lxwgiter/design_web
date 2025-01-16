@@ -5,8 +5,16 @@ import {
 } from '@element-plus/icons-vue'
 
 import {onMounted, reactive, ref} from 'vue'
-import {getAllConcert,getConcertPage,getTViewingInfo,getProjectDetails,getTicketInfo,updateDetails} from "../../services/concert.js";
-import {ElMessage} from "element-plus";
+import {
+  getAllConcert,
+  getConcertPage,
+  getTViewingInfo,
+  getProjectDetails,
+  getTicketInfo,
+  updateDetails,
+  deleteConcert
+} from "../../services/concert.js";
+import {ElMessage, ElMessageBox} from "element-plus";
 import MyDrawer from "../../components/MyDrawer.vue";
 
 
@@ -147,6 +155,34 @@ function formatDate(timeString) {
   return timeString.split(':').slice(0, 2).join(':').replace('T', ' ');
 }
 
+
+const handleDelete = (id) => {
+  ElMessageBox.confirm(
+      '你确认要删除该分类信息吗?',
+      '温馨提示',
+      {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+  ).then(() => {
+    deleteConcert(id).then(res => {
+      ElMessage.success("删除成功")
+      //刷新页面
+      setTimeout(() => {
+        firstGet()
+      },1000)
+    }).catch(error => {
+      ElMessage.error("服务异常", error)
+    })}
+  ).catch(() => {
+    ElMessage({
+      type: 'info',
+      message: '撤销删除',
+    })
+  })
+}
+
 </script>
 <template>
   <el-card class="page-container">
@@ -213,7 +249,7 @@ function formatDate(timeString) {
       <el-table-column label="操作" width="150">
         <template #default="{ row }">
           <el-button :icon="Edit" circle plain type="primary" @click="callOpenDrawer();chooseTitle('编辑门票信息',row.concertId)"></el-button>
-          <el-button :icon="Delete" circle plain type="danger"></el-button>
+          <el-button :icon="Delete" circle plain type="danger" @click="handleDelete(row.concertId)"></el-button>
         </template>
       </el-table-column>
       <template #empty>
@@ -258,7 +294,7 @@ function formatDate(timeString) {
       <div class="dialog-footer">
         <el-button @click="beforeClose()">Cancel</el-button>
         <el-button type="primary" @click=" handleSubmitDetails();beforeClose()">
-          Confirm
+          确认
         </el-button>
       </div>
     </template>
