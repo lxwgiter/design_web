@@ -18,3 +18,8 @@ export const getMe = ()=>{
 export const updateNicknameAndEmail = (nickname,email)=>{
     return http.patch(`/admin/updateNicknameAndEmail?nickname=${nickname}&email=${email}`);
 }
+
+//修改密码
+export const updatePassword = (data)=>{
+    return http.post('/admin/updatePassword',data);
+}

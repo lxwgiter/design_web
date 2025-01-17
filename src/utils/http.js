@@ -7,10 +7,10 @@ import {useTokenStore} from "../store/token.js";
 
 const baseURL = '/api';
 //导入路由组件
-import { useRouter } from 'vue-router';
-
-const router = useRouter(); // 获取路由实例
-
+// import { useRouter } from 'vue-router';
+//
+// const router = useRouter(); // 获取路由实例
+import router from '../router/index.js';
 
 const http = axios.create({
     baseURL: baseURL, // 替换为您的API基础URL
@@ -51,6 +51,7 @@ http.interceptors.response.use(
         if(err.response.status===401){
 
             ElMessage.error('请先登录')
+            console.log(router)
             router.push('/adminLogin')
         }else{
             ElMessage.error('服务异常')

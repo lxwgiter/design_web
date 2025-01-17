@@ -10,6 +10,14 @@ import {
   CaretBottom
 } from '@element-plus/icons-vue'
 import avatar from '../../assets/default.jpg'
+import { useRouter } from 'vue-router';
+import {useTokenStore} from '../../store/token.js'
+
+const router = useRouter(); // 获取路由实例
+
+//创建pinia实例
+const tokenStore = useTokenStore()
+//创建pinia实例
 </script>
 
 <template>
@@ -85,10 +93,10 @@ import avatar from '../../assets/default.jpg'
                     </span>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="profile" :icon="User">基本资料</el-dropdown-item>
-              <el-dropdown-item command="avatar" :icon="Crop">更换头像</el-dropdown-item>
-              <el-dropdown-item command="password" :icon="EditPen">重置密码</el-dropdown-item>
-              <el-dropdown-item command="logout" :icon="SwitchButton">退出登录</el-dropdown-item>
+              <el-dropdown-item command="profile" :icon="User" @click="router.push('/adminLayout/adminUserDetail')">基本资料</el-dropdown-item>
+              <el-dropdown-item command="avatar" :icon="Crop" @click="router.push('/adminLayout/adminAvatar')">更换头像</el-dropdown-item>
+              <el-dropdown-item command="password" :icon="EditPen" @click="router.push('/adminLayout/resetPassword')">重置密码</el-dropdown-item>
+              <el-dropdown-item command="logout" :icon="SwitchButton" @click="tokenStore.removeToken()">退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>

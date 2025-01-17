@@ -2,6 +2,10 @@
 import {onMounted, reactive, ref} from 'vue'
 import {getMe,updateNicknameAndEmail} from '../../services/adminService.js'
 import {ElMessage} from "element-plus";
+
+//定义表单 引用
+const detailForm =ref('')
+
 const userInfo = reactive({
   account: '',
   nickName: '',
@@ -39,11 +43,18 @@ const formatDate = (dateString) => {
 };
 
 const handleSubmit= ()=>{
-  updateNicknameAndEmail(userInfo.nickName,userInfo.email).then(res=>{
-    ElMessage.success("修改成功")
-    setTimeout(executeGet,1000)
-  }).catch(err=>{
-    ElMessage.error("服务异常",err)
+  detailForm.value.validate((valid) => {
+    if (valid) {
+      updateNicknameAndEmail(userInfo.nickName,userInfo.email).then(res=>{
+        ElMessage.success("修改成功")
+        setTimeout(executeGet,1000)
+      }).catch(err=>{
+        ElMessage.error("服务异常",err)
+      })
+    } else {
+      ElMessage.error("请按要求输入")
+      return false // 返回 false，停止进一步的处理
+    }
   })
 }
 </script>
@@ -56,8 +67,8 @@ const handleSubmit= ()=>{
     </template>
     <el-row>
       <el-col :span="12">
-        <el-form :model="userInfo" :rules="rules" label-width="100px" size="large">
-          <el-form-item label="登录名称">
+        <el-form :model="userInfo" :rules="rules" label-width="100px" size="large" ref="detailForm">
+          <el-form-item label="账号">
             <el-input v-model="userInfo.account" disabled></el-input>
           </el-form-item>
           <el-form-item label="注册时间">
