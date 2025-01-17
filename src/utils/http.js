@@ -6,6 +6,11 @@ import {useTokenStore} from "../store/token.js";
 
 
 const baseURL = '/api';
+//导入路由组件
+import { useRouter } from 'vue-router';
+
+const router = useRouter(); // 获取路由实例
+
 
 const http = axios.create({
     baseURL: baseURL, // 替换为您的API基础URL
@@ -44,8 +49,9 @@ http.interceptors.response.use(
     (err) => {
         //判断响应状态码,如果为401,则证明未登录,提示请登录,并跳转到登录页面
         if(err.response.status===401){
-            ElMessage.error('请先登录')
 
+            ElMessage.error('请先登录')
+            router.push('/adminLogin')
         }else{
             ElMessage.error('服务异常')
         }

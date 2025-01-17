@@ -21,6 +21,7 @@ const routes = [
             {path: '/adminLayout/concert', component: Concert},
             {path: '/adminLayout/resetPassword', component: AdminResetPassword},
         ]},
+    {path: '/',redirect:'/adminLayout/address'}
 ]
 
 //创建路由器
