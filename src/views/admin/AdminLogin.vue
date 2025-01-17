@@ -5,6 +5,7 @@ import {adminRegisterService,adminLoginService} from '../../services/adminServic
 import { ElMessage } from 'element-plus'
 import {useTokenStore} from '../../store/token.js'
 import { useRouter } from 'vue-router';
+import AdminForgetPassword from "../../components/AdminForgetPassword.vue";
 
 const router = useRouter(); // 获取路由实例
 //创建pinia实例
@@ -125,6 +126,14 @@ const handleLogin = () => {
   })
 }
 
+//子组件引用
+const childRef = ref('')
+//拿到子组件暴露的函数
+function callOpenDialog() {
+  if (childRef.value) {
+    childRef.value.openDialog();
+  }
+}
 
 </script>
 
@@ -175,7 +184,7 @@ const handleLogin = () => {
         <el-form-item class="flex">
           <div class="flex">
             <el-checkbox>记住我</el-checkbox>
-            <el-link type="primary" :underline="false">忘记密码？</el-link>
+            <el-link type="primary" :underline="false" @click="callOpenDialog()">忘记密码？</el-link>
           </div>
         </el-form-item>
         <!-- 登录按钮 -->
@@ -190,6 +199,7 @@ const handleLogin = () => {
       </el-form>
     </el-col>
   </el-row>
+  <AdminForgetPassword ref="childRef"></AdminForgetPassword>
 </template>
 
 <style scoped>

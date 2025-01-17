@@ -23,3 +23,8 @@ export const updateNicknameAndEmail = (nickname,email)=>{
 export const updatePassword = (data)=>{
     return http.post('/admin/updatePassword',data);
 }
+
+//忘记密码
+export const forgetPassword = (data)=>{
+    return http.post('/admin/forgetPassword',data);
+}

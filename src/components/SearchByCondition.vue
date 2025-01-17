@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive,ref,defineEmits  } from 'vue'
+import { reactive,ref  } from 'vue'
 import { getAddressesList } from '../services/address';
 import {getCategory} from '../services/concertCategory'
 import {ElMessage} from "element-plus";

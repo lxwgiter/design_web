@@ -111,7 +111,7 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, defineExpose, reactive} from 'vue'
+import {ref, reactive} from 'vue'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import type { DrawerProps } from 'element-plus'
 import { getAddressesList } from '../services/address';

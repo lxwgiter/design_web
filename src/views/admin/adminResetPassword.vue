@@ -38,6 +38,12 @@ const rules = {
   ]
 }
 
+const clearData = () =>{
+  formResetPassword.newPassword = ''
+  formResetPassword.reNewPassword = ''
+  formResetPassword.oldPassword = ''
+}
+
 const executeGet=()=>{
   getMe().then(res => {
     formResetPassword.account = res.data.account
@@ -53,6 +59,7 @@ const handleSubmit= ()=>{
   myForm.value.validate((valid) => {
     if (valid) {
       updatePassword({oldPassword: formResetPassword.oldPassword,newPassword: formResetPassword.newPassword}).then(res=>{
+        clearData()
         ElMessage.success("修改成功,请牢记新密码")
       }).catch(err=>{
         ElMessage.error("服务异常",err)
