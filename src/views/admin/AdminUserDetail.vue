@@ -2,6 +2,7 @@
 import {onMounted, reactive, ref} from 'vue'
 import {getMe,updateNicknameAndEmail} from '../../services/adminService.js'
 import {ElMessage} from "element-plus";
+import eventBus from '../../utils/eventBus.js'; // 导入事件总线
 
 //定义表单 引用
 const detailForm =ref('')
@@ -47,6 +48,7 @@ const handleSubmit= ()=>{
     if (valid) {
       updateNicknameAndEmail(userInfo.nickName,userInfo.email).then(res=>{
         ElMessage.success("修改成功")
+        eventBus.emit('dataEvent', userInfo.nickName); // 触发自定义事件并发送输入的数据
         setTimeout(executeGet,1000)
       }).catch(err=>{
         ElMessage.error("服务异常",err)
@@ -57,6 +59,9 @@ const handleSubmit= ()=>{
     }
   })
 }
+
+
+
 </script>
 <template>
   <el-card class="page-container">

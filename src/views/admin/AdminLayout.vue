@@ -12,12 +12,35 @@ import {
 import avatar from '../../assets/default.jpg'
 import { useRouter } from 'vue-router';
 import {useTokenStore} from '../../store/token.js'
+import {onBeforeUnmount, onMounted, reactive} from "vue";
+import {getMe} from '../../services/adminService.js'
+import {ElMessage} from "element-plus";
+import eventBus from '../../utils/eventBus.js'; // 导入事件总线
 
 const router = useRouter(); // 获取路由实例
 
 //创建pinia实例
 const tokenStore = useTokenStore()
-//创建pinia实例
+const userInfo = reactive({
+  nickName : '',
+  avatar : '',
+})
+const receiveData = (data) => {
+  userInfo.nickName = data; // 更新接收到的数据
+};
+
+onMounted(()=>{
+  //绑定自定义事件
+  eventBus.on('dataEvent', receiveData);
+  getMe().then(res => {
+    userInfo.nickName = res.data.nickName
+    userInfo.avatar = res.data.avatar
+  }).catch(err => ElMessage.error("服务异常",err))
+})
+// 组件卸载前取消订阅防止内存泄漏
+onBeforeUnmount(() => {
+  eventBus.off('dataEvent', receiveData);
+});
 </script>
 
 <template>
@@ -83,7 +106,7 @@ const tokenStore = useTokenStore()
     <el-container>
       <!-- 头部区域 -->
       <el-header>
-        <div>黑马程序员：<strong>东哥</strong></div>
+        <div>当前管理员：<strong>{{ userInfo.nickName }}</strong></div>
         <el-dropdown placement="bottom-end">
                     <span class="el-dropdown__box">
                         <el-avatar :src="avatar" />
@@ -96,7 +119,7 @@ const tokenStore = useTokenStore()
               <el-dropdown-item command="profile" :icon="User" @click="router.push('/adminLayout/adminUserDetail')">基本资料</el-dropdown-item>
               <el-dropdown-item command="avatar" :icon="Crop" @click="router.push('/adminLayout/adminAvatar')">更换头像</el-dropdown-item>
               <el-dropdown-item command="password" :icon="EditPen" @click="router.push('/adminLayout/resetPassword')">重置密码</el-dropdown-item>
-              <el-dropdown-item command="logout" :icon="SwitchButton" @click="tokenStore.removeToken()">退出登录</el-dropdown-item>
+              <el-dropdown-item command="logout" :icon="SwitchButton" @click="tokenStore.removeToken();router.push('/adminLogin')">退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
