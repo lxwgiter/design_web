@@ -16,8 +16,10 @@ import {onBeforeUnmount, onMounted, reactive} from "vue";
 import {getMe} from '../../services/adminService.js'
 import {ElMessage} from "element-plus";
 import eventBus from '../../utils/eventBus.js'; // 导入事件总线
+import {useAdminAvatarStore} from "../../store/adminAvatarStore.js";
 
 const router = useRouter(); // 获取路由实例
+const avatarStore = useAdminAvatarStore();
 
 //创建pinia实例
 const tokenStore = useTokenStore()
@@ -109,7 +111,7 @@ onBeforeUnmount(() => {
         <div>当前管理员：<strong>{{ userInfo.nickName }}</strong></div>
         <el-dropdown placement="bottom-end">
                     <span class="el-dropdown__box">
-                        <el-avatar :src="avatar" />
+                        <el-avatar :src="avatarStore.avatarUrl" />
                         <el-icon>
                             <CaretBottom />
                         </el-icon>
