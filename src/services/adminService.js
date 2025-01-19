@@ -28,3 +28,11 @@ export const updatePassword = (data)=>{
 export const forgetPassword = (data)=>{
     return http.post('/admin/forgetPassword',data);
 }
+
+//修改头像
+export const updateAvatar = (formData)=>{
+    return http.post('/admin/updateAvatarUrl', formData,{
+        headers: {
+            'Content-Type': 'multipart/form-data' // 需要指定为表单数据
+        }});
+}

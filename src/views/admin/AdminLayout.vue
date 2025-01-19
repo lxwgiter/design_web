@@ -36,7 +36,8 @@ onMounted(()=>{
   eventBus.on('dataEvent', receiveData);
   getMe().then(res => {
     userInfo.nickName = res.data.nickName
-    userInfo.avatar = res.data.avatar
+    userInfo.avatarUrl = res.data.avatarUrl
+    avatarStore.setAvatarUrl(res.data.avatarUrl);
   }).catch(err => ElMessage.error("服务异常",err))
 })
 // 组件卸载前取消订阅防止内存泄漏

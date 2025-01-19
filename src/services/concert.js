@@ -30,9 +30,13 @@ export const updateDetails = (data)=>{
     return http.patch('/concert/updateDetails',data);
 }
 
-//提供添加门票详情的接口
-export const addConcert = (data)=>{
-    return http.post('/concert/add',data);
+//提供添加门票的接口
+export const addConcert = (formData)=>{
+    return http.post('/concert/add', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data' // 需要指定为表单数据
+        }
+    });
 }
 
 //修改门票时数据回显
@@ -54,6 +58,8 @@ export const deleteConcert = (concertId)=>{
 export const searchConcertByConditions = (data)=>{
     return http.post('/concert/searchConcertByConditions',data);
 }
+
+//
 
 
 

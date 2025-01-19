@@ -1,13 +1,10 @@
 <script setup>
 import { Plus, Upload } from '@element-plus/icons-vue';
 import { onMounted, ref } from 'vue';
-import { useTokenStore } from "../../store/token.js";
-import { getMe } from "../../services/adminService.js";
-import axios from 'axios';
+import { getMe,updateAvatar } from "../../services/adminService.js";
 import {ElMessage} from "element-plus";
 import {useAdminAvatarStore} from "../../store/adminAvatarStore.js";
 
-const tokenStore = useTokenStore();
 const avatarStore = useAdminAvatarStore();
 
 const uploadRef = ref();
@@ -35,16 +32,7 @@ const handleBeforeUpload = (file) => {
   return false; // 阻止自动上传
 };
 
-// 上传成功的回调函数
-const uploadSuccess = (result) => {
-  ElMessage.success("修改头像成功")
-  setTimeout(() => {
-    getMe().then(res => {
-      avatarUrl.value = res.data.avatarUrl;
-      avatarStore.setAvatarUrl(res.data.avatarUrl)
-    });
-  },1500)
-};
+
 
 // 手动上传文件
 const uploadAvatar = async () => {
@@ -56,18 +44,20 @@ const uploadAvatar = async () => {
   const formData = new FormData();
   formData.append('file', selectedFile.value); // 将文件添加到 FormData
 
-  try {
-    const response = await axios.post('/api/admin/updateAvatarUrl', formData, {
-      headers: {
-        'Authorization': tokenStore.token,
-        'Content-Type': 'multipart/form-data' // 指定内容类型
-      }
-    });
-    uploadSuccess(response.data); // 上传成功的处理
-  } catch (error) {
-    ElMessage.error("上传失败", error);
-  }
-};
+  updateAvatar(formData).then(() => {
+    ElMessage.success("修改头像成功")
+    setTimeout(() => {
+      getMe().then(res => {
+        avatarUrl.value = res.data.avatarUrl;
+        avatarStore.setAvatarUrl(res.data.avatarUrl)
+      });
+    },1500)
+  }).catch(err => {
+    ElMessage.error("服务异常",err)
+  })
+
+}
+
 </script>
 
 <template>

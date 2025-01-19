@@ -9,9 +9,22 @@
   >
     <el-form :inline="true" :model="concertForm" class="demo-form-inline" :rules="rules" ref="formRef">
 
-      <el-form-item label="演唱会封面" label-width="100" prop="coverImageUrl">
-        <el-input v-model="concertForm.coverImageUrl" placeholder="输入封面" clearable style="width: 500px;"/>
-      </el-form-item><br>
+      <span>演唱会封面</span>
+      <el-row>
+        <el-col :span="12">
+          <el-upload
+              ref="uploadRef"
+              class="avatar-uploader"
+              :show-file-list="false"
+              :before-upload="handleBeforeUpload"
+              accept="image/*"
+          >
+            <img :src="concertForm.coverImageUrl" class="avatar" v-if="concertForm.coverImageUrl"  alt="封面"/>
+            <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+          </el-upload>
+          <br />
+        </el-col>
+      </el-row>
 
       <el-form-item label="演唱会名称" label-width="100" prop="name">
         <el-input v-model="concertForm.name" placeholder="输入演唱会名称" clearable style="width: 500px;"/>
@@ -119,6 +132,8 @@ const drawer = ref(false)
 const direction = ref<DrawerProps['direction']>('rtl') // 设置默认为右到左
 import {getCategory} from '../services/concertCategory'
 import {addConcert,getDetails,updateConcert} from '../services/concert'
+import {Plus, Upload} from '@element-plus/icons-vue'
+import axios from "axios";
 
 
 //接受父组件的信息
@@ -185,17 +200,39 @@ const chooseTitle = (operate,concertId) =>{
 
 const formRef = ref(null); // 表单引用
 const onSubmit = () => {
+
+  const formData = new FormData();
+  // 添加普通字段
+  formData.append('name', concertForm.name);
+  formData.append('performers', concertForm.performers);
+  formData.append('addressId', concertForm.addressId);
+  formData.append('categoryId', concertForm.categoryId);
+  formData.append('detailedLocation', concertForm.detailedLocation);
+  formData.append('startTime', new Date(concertForm.startTime).toISOString());
+  formData.append('price', concertForm.price);
+  formData.append('stock', concertForm.stock);
+  formData.append('projectDetails', concertForm.projectDetails);
+  formData.append('ticketInfo', concertForm.ticketInfo);
+  formData.append('viewingInfo', concertForm.viewingInfo);
+
+  // 添加文件字段
+  if (selectedFile.value) {
+    formData.append('file', selectedFile.value); // 这里的 'file' 应与控制器中@RequestParam的名称一致
+  }else {
+    ElMessage.error("请先选择图片")
+    return;
+  }
   // 调用表单的验证方法
   formRef.value.validate((valid) => {
     if (valid) {
       // 校验成功，执行提交逻辑
-      executeAdd(concertForm)
+      executeAdd(formData)
       //隐藏抽屉
       drawer.value = false;
       //刷新页面
       setTimeout(()=>{
         props.flush()
-      },1000)
+      },1500)
       // 这里可以调用 API 进行提交
     } else {
       ElMessage.error("请按照要求填写")
@@ -314,16 +351,27 @@ const getConcertCategory = () => {
     ElMessage.error("服务异常", error)
   })
 }
-
-const executeAdd = (data) => {
-  addConcert(data).then(res => {
-    ElMessage.success("添加成功")
-  }).catch(error => {
-    ElMessage.error("服务异常", error)
-  })
+const executeAdd = (formData) => {
+      addConcert(formData).then(res => {
+        ElMessage.success("新增成功")
+      }).catch(error => {
+        ElMessage.error("服务异常", error)
+      })
 }
 
+const uploadRef = ref();
+const selectedFile = ref(null); // 新增一个 ref 来保存选中的文件
 
+// 图片选择后回调
+const handleBeforeUpload = (file) => {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    concertForm.coverImageUrl = e.target.result; // 更新头像预览
+  };
+  reader.readAsDataURL(file); // 以 Data URL 的形式读取文件
+  selectedFile.value = file; // 保存选中的文件
+  return false; // 阻止自动上传
+};
 
 // 暴露 openDrawer 方法给父组件
 defineExpose({ openDrawer,chooseTitle });
@@ -336,4 +384,33 @@ defineExpose({ openDrawer,chooseTitle });
 .demo-form-inline .el-select {
   --el-select-width: 220px;
 }
+.avatar-uploader .el-upload {
+  border: 1px dashed var(--el-border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: var(--el-transition-duration-fast);
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: var(--el-color-primary);
+}
+
+.el-icon.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  text-align: center;
+}
+.avatar {
+  max-width: 100%; /* 限制最大宽度为100% */
+  max-height: 200px; /* 设置最大高度为200px，可以根据需要调整 */
+  width: auto; /* 宽度自动 */
+  height: auto; /* 高度自动 */
+  object-fit: cover; /* 保持图像比例，裁剪多余部分 */
+  border-radius: 6px; /* 可选，设置圆角 */
+}
+
 </style>
