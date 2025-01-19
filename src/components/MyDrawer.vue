@@ -19,7 +19,7 @@
               :before-upload="handleBeforeUpload"
               accept="image/*"
           >
-            <img :src="concertForm.coverImageUrl" class="avatar" v-if="concertForm.coverImageUrl"  alt="封面"/>
+            <img :src="tempSaveUrl" class="avatar" v-if="tempSaveUrl"  alt="封面"/>
             <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
           </el-upload>
           <br />
@@ -133,7 +133,6 @@ const direction = ref<DrawerProps['direction']>('rtl') // 设置默认为右到�
 import {getCategory} from '../services/concertCategory'
 import {addConcert,getDetails,updateConcert} from '../services/concert'
 import {Plus, Upload} from '@element-plus/icons-vue'
-import axios from "axios";
 
 
 //接受父组件的信息
@@ -148,6 +147,13 @@ const props = defineProps({
 const handleClose = (done: () => void) => {
   ElMessageBox.confirm('此时关闭会导致未保存的数据丢失，您确定关闭吗？')
       .then(() => {
+        //清空临时预览图片
+        selectedFile.value = ''
+        console.log(tempSaveUrl.value)
+        if(myTitle.value === '编辑门票信息'){
+          tempSaveUrl.value=concertForm.coverImageUrl
+        }
+        tempSaveUrl.value = ''
         //关闭窗口就清空数据
         clearData()
         done()
@@ -165,12 +171,14 @@ const otherDetailsOnUpdate = reactive({
   categoryId:''
 })
 
+const tempSaveUrl = ref('')//此变量临时保存图片URL
 const displayUpdate = (id) => {
   getDetails(id).then(response => {
     concertForm.addressId=response.data.addressId
     concertForm.categoryId=response.data.categoryId
     concertForm.concertId=response.data.concertId
     concertForm.coverImageUrl=response.data.coverImageUrl
+    tempSaveUrl.value=response.data.coverImageUrl
     concertForm.detailedLocation=response.data.detailedLocation
     concertForm.name=response.data.name
     concertForm.performers=response.data.performers
@@ -229,6 +237,11 @@ const onSubmit = () => {
       executeAdd(formData)
       //隐藏抽屉
       drawer.value = false;
+      //清除临时保存图片
+      selectedFile.value = ''
+      tempSaveUrl.value=''
+      //清空数据
+      clearData()
       //刷新页面
       setTimeout(()=>{
         props.flush()
@@ -241,9 +254,8 @@ const onSubmit = () => {
   });
 }
 
-const executeUpdate = (concertForm) => {
-  console.log(concertForm)
-  updateConcert(concertForm).then(res => {
+const executeUpdate = (formData) => {
+  updateConcert(formData).then(res => {
     ElMessage.success("修改成功")
   }).catch(error => {
     ElMessage.error("服务异常", error)
@@ -251,17 +263,42 @@ const executeUpdate = (concertForm) => {
 }
 
 const onUpdate = () => {
+  const formData = new FormData();
+  // 添加普通字段
+  formData.append('concertId', concertForm.concertId);
+  formData.append('name', concertForm.name);
+  formData.append('performers', concertForm.performers);
+  formData.append('addressId', concertForm.addressId);
+  formData.append('categoryId', concertForm.categoryId);
+  formData.append('detailedLocation', concertForm.detailedLocation);
+  formData.append('startTime', new Date(concertForm.startTime).toISOString());
+  formData.append('price', concertForm.price);
+  formData.append('stock', concertForm.stock);
+  formData.append('projectDetails', concertForm.projectDetails);
+  formData.append('ticketInfo', concertForm.ticketInfo);
+  formData.append('viewingInfo', concertForm.viewingInfo);
+
+  // 添加文件字段，若不存在则为null即可
+  if (selectedFile.value) {
+
+    formData.append('file', selectedFile.value); // 这里的 'file' 应与控制器中@RequestParam的名称一致
+  }else {
+    formData.append('coverImageUrl', concertForm.coverImageUrl);
+  }
   // 调用表单的验证方法
   formRef.value.validate((valid) => {
     if (valid) {
       // 校验成功，执行提交逻辑
-      executeUpdate(concertForm)
+      executeUpdate(formData)
       //隐藏抽屉
       drawer.value = false;
+      //清空临时缓存图片数据
+      selectedFile.value = ''
+      tempSaveUrl.value = ''
       //刷新页面
       setTimeout(() => {
         props.flush();
-      }, 1000);
+      }, 1500);
       // 这里可以调用 API 进行提交
     } else {
       ElMessage.error("请按照要求填写")
@@ -366,7 +403,7 @@ const selectedFile = ref(null); // 新增一个 ref 来保存选中的文件
 const handleBeforeUpload = (file) => {
   const reader = new FileReader();
   reader.onload = (e) => {
-    concertForm.coverImageUrl = e.target.result; // 更新头像预览
+    tempSaveUrl.value = e.target.result; // 更新头像预览
   };
   reader.readAsDataURL(file); // 以 Data URL 的形式读取文件
   selectedFile.value = file; // 保存选中的文件

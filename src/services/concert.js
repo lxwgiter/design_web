@@ -45,8 +45,12 @@ export const getDetails = (concertId)=>{
 }
 
 //修改门票
-export const updateConcert = (data)=>{
-    return http.put('/concert/updateConcert',data);
+export const updateConcert = (formData)=>{
+    return http.post('/concert/updateConcert', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data' // 需要指定为表单数据
+        }
+    });
 }
 
 //根据concertId删除门票
